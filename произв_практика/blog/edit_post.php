@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/includes/auth.php';
+require_once __DIR__ . '/includes/hidden_posts.php';
 require_once __DIR__ . '/includes/functions.php';
 
 $user = requireAuth();
@@ -29,12 +30,14 @@ $pageTitle = 'Редактирование поста';
 $error = '';
 $title = $post['title'];
 $content = $post['content'];
+$visibility = $post['visibility'] ?? POST_VISIBILITY_PUBLIC;
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $title = $_POST['title'] ?? '';
     $content = $_POST['content'] ?? '';
+    $visibility = normalizePostVisibility($_POST['visibility'] ?? POST_VISIBILITY_PUBLIC);
 
-    $result = updatePost($id, (int) $user['id'], $title, $content);
+    $result = updatePost($id, (int) $user['id'], $title, $content, $visibility);
 
     if ($result['ok']) {
         header('Location: post.php?id=' . $id . '&updated=1');
@@ -42,6 +45,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     $error = $result['error'];
+    $post = getUserPostById($id, (int) $user['id']) ?? $post;
 }
 
 require_once __DIR__ . '/includes/header.php';
@@ -49,7 +53,7 @@ require_once __DIR__ . '/includes/header.php';
 
 <div class="card">
     <h1 class="page-title">Редактирование поста</h1>
-    <p class="page-subtitle">Измените заголовок или текст публикации</p>
+    <p class="page-subtitle">Измените заголовок, текст или видимость публикации</p>
 
     <?php if ($error !== ''): ?>
         <div class="alert alert-error"><?= e($error) ?></div>
@@ -67,6 +71,22 @@ require_once __DIR__ . '/includes/header.php';
             <textarea id="content" name="content" required data-validate-field="content"><?= e($content) ?></textarea>
             <div class="field-error"></div>
         </div>
+
+        <div class="form-group">
+            <label for="visibility">Видимость</label>
+            <select id="visibility" name="visibility">
+                <option value="<?= e(POST_VISIBILITY_PUBLIC) ?>" <?= $visibility === POST_VISIBILITY_PUBLIC ? 'selected' : '' ?>>
+                    Публичный — виден всем
+                </option>
+                <option value="<?= e(POST_VISIBILITY_ON_REQUEST) ?>" <?= $visibility === POST_VISIBILITY_ON_REQUEST ? 'selected' : '' ?>>
+                    Только по запросу — скрыт, доступ по ссылке с кодом
+                </option>
+            </select>
+        </div>
+
+        <?php if (isPostOnRequest($post)): ?>
+            <?php renderOwnerAccessLink($post); ?>
+        <?php endif; ?>
 
         <div class="form-actions">
             <button type="submit" class="btn btn-primary">Сохранить</button>

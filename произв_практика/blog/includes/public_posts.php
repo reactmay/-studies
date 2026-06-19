@@ -43,16 +43,9 @@ function enrichPublicPostItem(array $post, bool $withPreview = true): array
 
 function getPublicPostById(int $id): ?array
 {
-    $stmt = getDb()->prepare('
-        SELECT posts.*, users.username, users.avatar
-        FROM posts
-        JOIN users ON users.id = posts.user_id
-        WHERE posts.id = ?
-    ');
-    $stmt->execute([$id]);
-    $post = $stmt->fetch();
+    $post = getPostWithAuthorById($id);
 
-    if (!$post) {
+    if ($post === null || isPostOnRequest($post)) {
         return null;
     }
 
@@ -75,7 +68,7 @@ function generatePublicPostsList(
     $perPage = max(1, min(100, $perPage));
     $offset = ($page - 1) * $perPage;
 
-    $conditions = ['1=1'];
+    $conditions = [publicPostsVisibilitySql()];
     $params = [];
 
     if ($authorId !== null && $authorId > 0) {
@@ -181,7 +174,10 @@ function renderPublicPostView(array $post, ?array $currentUser, bool $showUpdate
     <?php endif; ?>
 
     <article class="card">
-        <h1 class="page-title"><?= e($post['title']) ?></h1>
+        <h1 class="page-title">
+            <?= e($post['title']) ?>
+            <?php renderPostVisibilityBadge($post); ?>
+        </h1>
         <p class="card-meta author-row">
             <?= renderAvatar(['username' => $post['username'], 'avatar' => $post['avatar'] ?? null], 'sm') ?>
             <span>
@@ -193,6 +189,10 @@ function renderPublicPostView(array $post, ?array $currentUser, bool $showUpdate
             </span>
         </p>
         <div class="card-content"><?= e($post['content']) ?></div>
+
+        <?php if ($currentUser && (int) $currentUser['id'] === (int) $post['user_id'] && isPostOnRequest($post)): ?>
+            <?php renderOwnerAccessLink($post); ?>
+        <?php endif; ?>
 
         <?php if ($currentUser && (int) $currentUser['id'] !== (int) $post['user_id']): ?>
             <div class="form-actions" style="margin-top: 1rem;">

@@ -61,13 +61,20 @@ function getPostById(int $id): ?array
     return getPublicPostById($id);
 }
 
-function getUserPosts(int $userId): array
+function getUserPosts(int $userId, bool $publicOnly = false): array
 {
-    $stmt = getDb()->prepare('
+    $sql = '
         SELECT * FROM posts
         WHERE user_id = ?
-        ORDER BY created_at DESC
-    ');
+    ';
+
+    if ($publicOnly) {
+        $sql .= " AND visibility = 'public'";
+    }
+
+    $sql .= ' ORDER BY created_at DESC';
+
+    $stmt = getDb()->prepare($sql);
     $stmt->execute([$userId]);
 
     return $stmt->fetchAll();
@@ -85,10 +92,11 @@ function getUserPostById(int $postId, int $userId): ?array
     return $post ?: null;
 }
 
-function createPost(int $userId, string $title, string $content): array
+function createPost(int $userId, string $title, string $content, string $visibility = POST_VISIBILITY_PUBLIC): array
 {
     $title = trim($title);
     $content = trim($content);
+    $visibility = normalizePostVisibility($visibility);
 
     if ($title === '' || mb_strlen($title) < 3) {
         return ['ok' => false, 'error' => 'Заголовок должен быть не короче 3 символов.'];
@@ -98,16 +106,27 @@ function createPost(int $userId, string $title, string $content): array
         return ['ok' => false, 'error' => 'Текст поста должен быть не короче 10 символов.'];
     }
 
-    $stmt = getDb()->prepare('INSERT INTO posts (user_id, title, content) VALUES (?, ?, ?)');
-    $stmt->execute([$userId, $title, $content]);
+    $accessToken = $visibility === POST_VISIBILITY_ON_REQUEST ? generatePostAccessToken() : null;
+
+    $stmt = getDb()->prepare('
+        INSERT INTO posts (user_id, title, content, visibility, access_token)
+        VALUES (?, ?, ?, ?, ?)
+    ');
+    $stmt->execute([$userId, $title, $content, $visibility, $accessToken]);
 
     return ['ok' => true, 'post_id' => (int) getDb()->lastInsertId()];
 }
 
-function updatePost(int $postId, int $userId, string $title, string $content): array
-{
+function updatePost(
+    int $postId,
+    int $userId,
+    string $title,
+    string $content,
+    string $visibility = POST_VISIBILITY_PUBLIC
+): array {
     $title = trim($title);
     $content = trim($content);
+    $visibility = normalizePostVisibility($visibility);
 
     if ($title === '' || mb_strlen($title) < 3) {
         return ['ok' => false, 'error' => 'Заголовок должен быть не короче 3 символов.'];
@@ -123,12 +142,20 @@ function updatePost(int $postId, int $userId, string $title, string $content): a
         return ['ok' => false, 'error' => 'Пост не найден или у вас нет прав на редактирование.'];
     }
 
+    $accessToken = $post['access_token'] ?? null;
+    if ($visibility === POST_VISIBILITY_ON_REQUEST && ($accessToken === null || $accessToken === '')) {
+        $accessToken = generatePostAccessToken();
+    }
+    if ($visibility === POST_VISIBILITY_PUBLIC) {
+        $accessToken = null;
+    }
+
     $stmt = getDb()->prepare('
         UPDATE posts
-        SET title = ?, content = ?, updated_at = NOW()
+        SET title = ?, content = ?, visibility = ?, access_token = ?, updated_at = NOW()
         WHERE id = ? AND user_id = ?
     ');
-    $stmt->execute([$title, $content, $postId, $userId]);
+    $stmt->execute([$title, $content, $visibility, $accessToken, $postId, $userId]);
 
     return ['ok' => true, 'post_id' => $postId];
 }

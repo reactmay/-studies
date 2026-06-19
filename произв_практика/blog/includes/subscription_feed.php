@@ -24,7 +24,7 @@ function generateSubscriptionAuthorsList(int $userId): array
             MAX(posts.created_at) AS latest_post_at
         FROM subscriptions
         JOIN users ON users.id = subscriptions.following_id
-        LEFT JOIN posts ON posts.user_id = users.id
+        LEFT JOIN posts ON posts.user_id = users.id AND ' . publicPostsVisibilitySql('posts') . '
         WHERE subscriptions.follower_id = ?
         GROUP BY users.id, users.username, users.avatar, subscriptions.created_at
         ORDER BY subscriptions.created_at DESC
@@ -70,12 +70,14 @@ function generateSubscriptionFeedList(
         $params[] = $filterAuthorId;
     }
 
+    $visibilitySql = ' AND ' . publicPostsVisibilitySql();
+
     $countSql = '
         SELECT COUNT(*)
         FROM posts
         JOIN subscriptions ON subscriptions.following_id = posts.user_id
         WHERE subscriptions.follower_id = ?
-        ' . $authorFilterSql;
+        ' . $visibilitySql . $authorFilterSql;
 
     $countStmt = getDb()->prepare($countSql);
     $countStmt->execute($params);
@@ -88,6 +90,7 @@ function generateSubscriptionFeedList(
             FROM posts
             JOIN subscriptions ON subscriptions.following_id = posts.user_id
             WHERE subscriptions.follower_id = ?
+            AND ' . publicPostsVisibilitySql() . '
         ');
         $allCountStmt->execute([$userId]);
         $totalAllItems = (int) $allCountStmt->fetchColumn();
@@ -107,7 +110,7 @@ function generateSubscriptionFeedList(
             JOIN subscriptions ON subscriptions.following_id = posts.user_id
                 AND subscriptions.follower_id = ?
             WHERE 1=1
-            ' . $authorFilterSql . '
+            ' . $visibilitySql . $authorFilterSql . '
             ORDER BY posts.created_at DESC
             LIMIT ? OFFSET ?
         ';

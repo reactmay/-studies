@@ -14,6 +14,7 @@ function renderPostCard(array $post, bool $showPreview = true): void
         <div class="card-header">
             <h2 class="card-title">
                 <a href="post.php?id=<?= (int) $post['id'] ?>"><?= e($post['title']) ?></a>
+                <?php renderPostVisibilityBadge($post); ?>
             </h2>
         </div>
         <p class="card-meta author-row">

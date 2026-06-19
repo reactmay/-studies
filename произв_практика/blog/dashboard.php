@@ -114,6 +114,7 @@ $avatarError = $_GET['avatar_error'] ?? '';
                     <div class="card-header">
                         <h3 class="card-title">
                             <a href="post.php?id=<?= (int) $post['id'] ?>"><?= e($post['title']) ?></a>
+                            <?php renderPostVisibilityBadge($post); ?>
                         </h3>
                         <div class="post-actions">
                             <a href="post.php?id=<?= (int) $post['id'] ?>" class="btn btn-outline">Открыть</a>

@@ -518,6 +518,53 @@ h1, h2, h3 {
     margin: 0;
 }
 
+.post-badge {
+    display: inline-block;
+    margin-left: 0.5rem;
+    padding: 0.15rem 0.5rem;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    vertical-align: middle;
+}
+
+.post-badge-hidden {
+    background: rgba(234, 179, 8, 0.15);
+    border: 1px solid rgba(234, 179, 8, 0.35);
+    color: #fde68a;
+}
+
+.hidden-post-request {
+    max-width: 520px;
+    margin: 0 auto;
+}
+
+.access-link-box {
+    margin-top: 1rem;
+    padding: 1rem;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: rgba(59, 130, 246, 0.08);
+}
+
+.access-link-input {
+    width: 100%;
+    margin-top: 0.5rem;
+    padding: 0.65rem 0.75rem;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: #111827;
+    color: var(--text);
+    font: inherit;
+}
+
+.card-title {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+}
+
 .pagination {
     display: flex;
     align-items: center;

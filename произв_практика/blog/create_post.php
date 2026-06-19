@@ -10,12 +10,14 @@ $user = requireAuth();
 $error = '';
 $title = '';
 $content = '';
+$visibility = POST_VISIBILITY_PUBLIC;
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $title = $_POST['title'] ?? '';
     $content = $_POST['content'] ?? '';
+    $visibility = normalizePostVisibility($_POST['visibility'] ?? POST_VISIBILITY_PUBLIC);
 
-    $result = createPost((int) $user['id'], $title, $content);
+    $result = createPost((int) $user['id'], $title, $content, $visibility);
 
     if ($result['ok']) {
         header('Location: dashboard.php?created=1');
@@ -45,6 +47,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <label for="content">Текст поста</label>
             <textarea id="content" name="content" required data-validate-field="content"><?= e($content) ?></textarea>
             <div class="field-error"></div>
+        </div>
+
+        <div class="form-group">
+            <label for="visibility">Видимость</label>
+            <select id="visibility" name="visibility">
+                <option value="<?= e(POST_VISIBILITY_PUBLIC) ?>" <?= $visibility === POST_VISIBILITY_PUBLIC ? 'selected' : '' ?>>
+                    Публичный — виден всем
+                </option>
+                <option value="<?= e(POST_VISIBILITY_ON_REQUEST) ?>" <?= $visibility === POST_VISIBILITY_ON_REQUEST ? 'selected' : '' ?>>
+                    Только по запросу — скрыт, доступ по ссылке с кодом
+                </option>
+            </select>
+            <p class="form-hint">Скрытые посты не отображаются в общем списке. Ссылку с кодом вы получите после публикации.</p>
         </div>
 
         <div class="form-actions">

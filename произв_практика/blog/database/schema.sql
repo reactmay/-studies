@@ -20,9 +20,12 @@ CREATE TABLE IF NOT EXISTS posts (
     user_id INT UNSIGNED NOT NULL,
     title VARCHAR(255) NOT NULL,
     content TEXT NOT NULL,
+    visibility ENUM('public', 'on_request') NOT NULL DEFAULT 'public',
+    access_token VARCHAR(64) NULL,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME NULL,
     KEY idx_posts_user_id (user_id),
+    KEY idx_posts_visibility (visibility),
     CONSTRAINT fk_posts_user FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
