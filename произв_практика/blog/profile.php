@@ -106,7 +106,10 @@ require_once __DIR__ . '/includes/header.php';
     </section>
 <?php else: ?>
     <section>
-        <h2>Посты пользователя (<?= count($posts) ?>)</h2>
+        <div class="section-header-row">
+            <h2>Посты пользователя (<?= count($posts) ?>)</h2>
+            <a href="<?= e(publicPostsUrl(1, (int) $profileUser['id'])) ?>" class="btn btn-outline">Все публичные посты</a>
+        </div>
         <?php if ($posts === []): ?>
             <div class="card empty-state"><p>У пользователя пока нет постов.</p></div>
         <?php else: ?>

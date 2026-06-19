@@ -53,31 +53,12 @@ function renderAvatar(array $user, string $size = 'md'): string
 
 function getAllPosts(int $limit = 50): array
 {
-    $stmt = getDb()->prepare('
-        SELECT posts.*, users.username, users.avatar
-        FROM posts
-        JOIN users ON users.id = posts.user_id
-        ORDER BY posts.created_at DESC
-        LIMIT ?
-    ');
-    $stmt->bindValue(1, $limit, PDO::PARAM_INT);
-    $stmt->execute();
-
-    return $stmt->fetchAll();
+    return generatePublicPostsList(1, $limit)['items'];
 }
 
 function getPostById(int $id): ?array
 {
-    $stmt = getDb()->prepare('
-        SELECT posts.*, users.username, users.avatar
-        FROM posts
-        JOIN users ON users.id = posts.user_id
-        WHERE posts.id = ?
-    ');
-    $stmt->execute([$id]);
-    $post = $stmt->fetch();
-
-    return $post ?: null;
+    return getPublicPostById($id);
 }
 
 function getUserPosts(int $userId): array

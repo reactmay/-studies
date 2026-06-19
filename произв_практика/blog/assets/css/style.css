@@ -497,6 +497,27 @@ h1, h2, h3 {
     margin: 0 0 1rem;
 }
 
+.public-search-form {
+    margin-bottom: 1.5rem;
+}
+
+.public-search-form .form-group {
+    margin-bottom: 0.75rem;
+}
+
+.section-header-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-bottom: 1rem;
+}
+
+.section-header-row h2 {
+    margin: 0;
+}
+
 .pagination {
     display: flex;
     align-items: center;
