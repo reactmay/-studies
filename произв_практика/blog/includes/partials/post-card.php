@@ -28,6 +28,11 @@ function renderPostCard(array $post, bool $showPreview = true): void
             </span>
         </p>
         <?php renderPostTags($post['tags'] ?? []); ?>
+        <?php if (!empty($post['comments_count'])): ?>
+            <p class="card-meta comments-count-link">
+                <a href="post.php?id=<?= (int) $post['id'] ?>#comments"><?= (int) $post['comments_count'] ?> коммент.</a>
+            </p>
+        <?php endif; ?>
         <?php if ($showPreview): ?>
             <div class="card-content"><?= e($content) ?></div>
         <?php else: ?>

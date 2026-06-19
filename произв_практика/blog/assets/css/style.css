@@ -607,6 +607,65 @@ h1, h2, h3 {
     color: #fff;
 }
 
+.comments-section h2 {
+    margin-top: 0;
+}
+
+.comment-form {
+    margin-bottom: 1.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border);
+}
+
+.comments-list {
+    display: grid;
+    gap: 1rem;
+}
+
+.comment-item {
+    padding: 1rem;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: rgba(17, 24, 39, 0.5);
+}
+
+.comment-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+}
+
+.comment-meta {
+    flex: 1;
+    min-width: 0;
+    color: var(--muted);
+    font-size: 0.9rem;
+}
+
+.comment-meta a {
+    color: var(--text);
+    font-weight: 600;
+}
+
+.comment-content {
+    white-space: pre-wrap;
+    color: #cbd5e1;
+}
+
+.comments-empty {
+    padding: 1.5rem 0 0;
+}
+
+.btn-sm {
+    padding: 0.35rem 0.65rem;
+    font-size: 0.85rem;
+}
+
+.comments-count-link {
+    margin: 0.25rem 0 0.75rem;
+}
+
 .pagination {
     display: flex;
     align-items: center;

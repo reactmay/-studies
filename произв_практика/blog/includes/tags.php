@@ -193,6 +193,37 @@ function attachTagsToPosts(array $posts): array
     }
     unset($post);
 
+    return attachCommentsCountToPosts($posts);
+}
+
+/** @param array<int, array<string, mixed>> $posts */
+function attachCommentsCountToPosts(array $posts): array
+{
+    if ($posts === []) {
+        return $posts;
+    }
+
+    $ids = array_map(static fn (array $post): int => (int) $post['id'], $posts);
+    $placeholders = implode(',', array_fill(0, count($ids), '?'));
+
+    $stmt = getDb()->prepare("
+        SELECT post_id, COUNT(*) AS comments_count
+        FROM comments
+        WHERE post_id IN ($placeholders)
+        GROUP BY post_id
+    ");
+    $stmt->execute($ids);
+
+    $counts = [];
+    foreach ($stmt->fetchAll() as $row) {
+        $counts[(int) $row['post_id']] = (int) $row['comments_count'];
+    }
+
+    foreach ($posts as &$post) {
+        $post['comments_count'] = $counts[(int) $post['id']] ?? 0;
+    }
+    unset($post);
+
     return $posts;
 }
 

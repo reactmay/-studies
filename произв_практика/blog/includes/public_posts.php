@@ -210,8 +210,14 @@ function renderPublicPostsPagination(array $meta): void
 }
 
 /** @param array<string, mixed> $post */
-function renderPublicPostView(array $post, ?array $currentUser, bool $showUpdatedNotice = false): void
-{
+function renderPublicPostView(
+    array $post,
+    ?array $currentUser,
+    bool $showUpdatedNotice = false,
+    ?string $accessToken = null,
+    bool $commentAdded = false,
+    string $commentError = ''
+): void {
     if (!isset($post['tags'])) {
         $post['tags'] = getPostTags((int) $post['id']);
     }
@@ -256,6 +262,12 @@ function renderPublicPostView(array $post, ?array $currentUser, bool $showUpdate
             </div>
         <?php endif; ?>
     </article>
+
+    <?php if ($commentError !== ''): ?>
+        <div class="alert alert-error"><?= e($commentError) ?></div>
+    <?php endif; ?>
+
+    <?php renderPostCommentsSection($post, $currentUser, $accessToken, $commentAdded); ?>
     <?php
 }
 

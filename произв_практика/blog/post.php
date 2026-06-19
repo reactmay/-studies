@@ -6,6 +6,7 @@ require_once __DIR__ . '/includes/auth.php';
 require_once __DIR__ . '/includes/hidden_posts.php';
 require_once __DIR__ . '/includes/content.php';
 require_once __DIR__ . '/includes/tags.php';
+require_once __DIR__ . '/includes/comments.php';
 require_once __DIR__ . '/includes/functions.php';
 require_once __DIR__ . '/includes/subscriptions.php';
 require_once __DIR__ . '/includes/public_posts.php';
@@ -33,6 +34,8 @@ if (!$view['found']) {
 
 $post = enrichPublicPostItem($view['post'], false);
 $updated = isset($_GET['updated']);
+$commentAdded = isset($_GET['commented']);
+$commentError = $_GET['comment_error'] ?? '';
 $tokenInvalid = !$view['accessible'] && $accessToken !== null && $accessToken !== '';
 
 $pageTitle = $view['accessible'] ? $post['title'] : 'Скрытый пост';
@@ -42,7 +45,7 @@ require_once __DIR__ . '/includes/header.php';
 if (!$view['accessible']) {
     renderHiddenPostRequestForm($id, $tokenInvalid);
 } else {
-    renderPublicPostView($post, $currentUser, $updated);
+    renderPublicPostView($post, $currentUser, $updated, $accessToken, $commentAdded, $commentError);
 }
 ?>
 
