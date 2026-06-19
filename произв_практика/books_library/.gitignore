@@ -1,0 +1,3 @@
+/config/database.local.php
+/uploads/covers/*
+!/uploads/covers/.gitkeep
