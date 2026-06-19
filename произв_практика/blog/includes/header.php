@@ -5,6 +5,8 @@ declare(strict_types=1);
 require_once __DIR__ . '/auth.php';
 require_once __DIR__ . '/functions.php';
 require_once __DIR__ . '/subscriptions.php';
+require_once __DIR__ . '/subscription_feed.php';
+require_once __DIR__ . '/partials/post-card.php';
 
 $user = currentUser();
 $pageTitle = $pageTitle ?? 'Простой блог';
