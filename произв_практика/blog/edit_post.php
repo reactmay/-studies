@@ -5,6 +5,7 @@ declare(strict_types=1);
 require_once __DIR__ . '/includes/auth.php';
 require_once __DIR__ . '/includes/hidden_posts.php';
 require_once __DIR__ . '/includes/content.php';
+require_once __DIR__ . '/includes/tags.php';
 require_once __DIR__ . '/includes/functions.php';
 
 $user = requireAuth();
@@ -41,13 +42,15 @@ $error = '';
 $title = $post['title'];
 $content = $post['content'];
 $visibility = $post['visibility'] ?? POST_VISIBILITY_PUBLIC;
+$tagsInput = tagsInputFromPost($id);
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $title = $_POST['title'] ?? '';
     $content = $_POST['content'] ?? '';
     $visibility = normalizePostVisibility($_POST['visibility'] ?? POST_VISIBILITY_PUBLIC);
+    $tagsInput = $_POST['tags'] ?? '';
 
-    $result = updatePost($id, (int) $user['id'], $title, $content, $visibility);
+    $result = updatePost($id, (int) $user['id'], $title, $content, $visibility, $tagsInput);
 
     if ($result['ok']) {
         header('Location: post.php?id=' . $id . '&updated=1');

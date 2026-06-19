@@ -7,9 +7,18 @@ function publicPostUrl(int $postId): string
     return 'post.php?id=' . $postId;
 }
 
-function publicPostsUrl(int $page = 1, ?int $authorId = null, ?string $search = null): string
-{
-    $query = ['page' => max(1, $page)];
+function publicPostsUrl(
+    int $page = 1,
+    ?int $authorId = null,
+    ?string $search = null,
+    ?string $tagSlug = null,
+    string $sort = POST_SORT_NEWEST
+): string {
+    $query = [];
+
+    if ($page > 1) {
+        $query['page'] = $page;
+    }
 
     if ($authorId !== null && $authorId > 0) {
         $query['author'] = $authorId;
@@ -19,13 +28,20 @@ function publicPostsUrl(int $page = 1, ?int $authorId = null, ?string $search = 
         $query['q'] = trim($search);
     }
 
-    $path = 'index.php';
-
-    if ($query === ['page' => 1] && !isset($query['author']) && !isset($query['q'])) {
-        return $path;
+    if ($tagSlug !== null && trim($tagSlug) !== '') {
+        $query['tag'] = trim($tagSlug);
     }
 
-    return $path . '?' . http_build_query($query);
+    $sort = normalizePostSort($sort);
+    if ($sort !== POST_SORT_NEWEST) {
+        $query['sort'] = $sort;
+    }
+
+    if ($query === []) {
+        return 'index.php';
+    }
+
+    return 'index.php?' . http_build_query($query);
 }
 
 /** @param array<string, mixed> $post */
@@ -36,6 +52,10 @@ function enrichPublicPostItem(array $post, bool $withPreview = true): array
 
     if ($withPreview) {
         $post['preview'] = postContentPreview($post['content']);
+    }
+
+    if (!isset($post['tags'])) {
+        $post['tags'] = getPostTags((int) $post['id']);
     }
 
     return $post;
@@ -55,21 +75,26 @@ function getPublicPostById(int $id): ?array
 /**
  * @return array{
  *     meta: array<string, mixed>,
- *     items: array<int, array<string, mixed>>
+ *     items: array<int, array<string, mixed>>,
+ *     tags: array<int, array<string, mixed>>
  * }
  */
 function generatePublicPostsList(
     int $page = 1,
     int $perPage = 10,
     ?int $authorId = null,
-    ?string $search = null
+    ?string $search = null,
+    ?string $tagSlug = null,
+    string $sort = POST_SORT_NEWEST
 ): array {
     $page = max(1, $page);
     $perPage = max(1, min(100, $perPage));
     $offset = ($page - 1) * $perPage;
+    $sort = normalizePostSort($sort);
 
     $conditions = [publicPostsVisibilitySql()];
     $params = [];
+    $joins = '';
 
     if ($authorId !== null && $authorId > 0) {
         $conditions[] = 'posts.user_id = ?';
@@ -84,12 +109,24 @@ function generatePublicPostsList(
         $params[] = $like;
     }
 
+    $activeTag = null;
+    if ($tagSlug !== null && trim($tagSlug) !== '') {
+        $activeTag = getTagBySlug($tagSlug);
+        if ($activeTag !== null) {
+            $joins .= ' JOIN post_tags ON post_tags.post_id = posts.id';
+            $joins .= ' JOIN tags ON tags.id = post_tags.tag_id AND tags.slug = ?';
+            $params[] = $activeTag['slug'];
+        }
+    }
+
     $whereSql = implode(' AND ', $conditions);
+    $orderSql = postSortOrderSql($sort);
 
     $countSql = '
-        SELECT COUNT(*)
+        SELECT COUNT(DISTINCT posts.id)
         FROM posts
         JOIN users ON users.id = posts.user_id
+        ' . $joins . '
         WHERE ' . $whereSql;
 
     $countStmt = getDb()->prepare($countSql);
@@ -100,11 +137,12 @@ function generatePublicPostsList(
 
     if ($totalItems > 0) {
         $listSql = '
-            SELECT posts.*, users.username, users.avatar
+            SELECT DISTINCT posts.*, users.username, users.avatar
             FROM posts
             JOIN users ON users.id = posts.user_id
+            ' . $joins . '
             WHERE ' . $whereSql . '
-            ORDER BY posts.created_at DESC
+            ORDER BY ' . $orderSql . '
             LIMIT ? OFFSET ?
         ';
 
@@ -118,10 +156,10 @@ function generatePublicPostsList(
         $listStmt->bindValue($bindIndex, $offset, PDO::PARAM_INT);
         $listStmt->execute();
 
-        $items = array_map(
+        $items = attachTagsToPosts(array_map(
             static fn (array $post): array => enrichPublicPostItem($post),
             $listStmt->fetchAll()
-        );
+        ));
     }
 
     $totalPages = $totalItems > 0 ? (int) ceil($totalItems / $perPage) : 0;
@@ -135,8 +173,12 @@ function generatePublicPostsList(
             'total_pages' => $totalPages,
             'author_id' => $authorId,
             'search' => $search !== '' ? $search : null,
+            'tag_slug' => $activeTag['slug'] ?? null,
+            'tag_name' => $activeTag['name'] ?? null,
+            'sort' => $sort,
         ],
         'items' => $items,
+        'tags' => getPopularTags(),
     ];
 }
 
@@ -146,6 +188,8 @@ function renderPublicPostsPagination(array $meta): void
     $page = (int) ($meta['page'] ?? 1);
     $authorId = isset($meta['author_id']) ? (int) $meta['author_id'] : null;
     $search = $meta['search'] ?? null;
+    $tagSlug = $meta['tag_slug'] ?? null;
+    $sort = $meta['sort'] ?? POST_SORT_NEWEST;
 
     if ($totalPages <= 1) {
         return;
@@ -153,13 +197,13 @@ function renderPublicPostsPagination(array $meta): void
     ?>
     <nav class="pagination" aria-label="Навигация по страницам">
         <?php if ($page > 1): ?>
-            <a class="btn btn-outline" href="<?= e(publicPostsUrl($page - 1, $authorId ?: null, $search)) ?>">← Назад</a>
+            <a class="btn btn-outline" href="<?= e(publicPostsUrl($page - 1, $authorId ?: null, $search, $tagSlug, $sort)) ?>">← Назад</a>
         <?php endif; ?>
 
         <span class="pagination-info">Страница <?= $page ?> из <?= $totalPages ?></span>
 
         <?php if ($page < $totalPages): ?>
-            <a class="btn btn-outline" href="<?= e(publicPostsUrl($page + 1, $authorId ?: null, $search)) ?>">Вперёд →</a>
+            <a class="btn btn-outline" href="<?= e(publicPostsUrl($page + 1, $authorId ?: null, $search, $tagSlug, $sort)) ?>">Вперёд →</a>
         <?php endif; ?>
     </nav>
     <?php
@@ -168,6 +212,9 @@ function renderPublicPostsPagination(array $meta): void
 /** @param array<string, mixed> $post */
 function renderPublicPostView(array $post, ?array $currentUser, bool $showUpdatedNotice = false): void
 {
+    if (!isset($post['tags'])) {
+        $post['tags'] = getPostTags((int) $post['id']);
+    }
     ?>
     <?php if ($showUpdatedNotice): ?>
         <div class="alert alert-success">Пост успешно обновлён.</div>
@@ -178,6 +225,7 @@ function renderPublicPostView(array $post, ?array $currentUser, bool $showUpdate
             <?= e($post['title']) ?>
             <?php renderPostVisibilityBadge($post); ?>
         </h1>
+        <?php renderPostTags($post['tags']); ?>
         <p class="card-meta author-row">
             <?= renderAvatar(['username' => $post['username'], 'avatar' => $post['avatar'] ?? null], 'sm') ?>
             <span>
@@ -208,5 +256,32 @@ function renderPublicPostView(array $post, ?array $currentUser, bool $showUpdate
             </div>
         <?php endif; ?>
     </article>
+    <?php
+}
+
+function renderTagFilterPanel(array $popularTags, array $meta): void
+{
+    $activeSlug = $meta['tag_slug'] ?? null;
+    $sort = $meta['sort'] ?? POST_SORT_NEWEST;
+    ?>
+    <aside class="card tag-panel">
+        <h2>Теги</h2>
+        <?php if ($popularTags === []): ?>
+            <p class="card-meta">Тегов пока нет.</p>
+        <?php else: ?>
+            <div class="post-tags tag-panel-list">
+                <a class="post-tag <?= $activeSlug === null ? 'is-active' : '' ?>"
+                   href="<?= e(publicPostsUrl(1, $meta['author_id'] ?? null, $meta['search'] ?? null, null, $sort)) ?>">
+                    Все
+                </a>
+                <?php foreach ($popularTags as $tag): ?>
+                    <a class="post-tag <?= $activeSlug === $tag['slug'] ? 'is-active' : '' ?>"
+                       href="<?= e(publicPostsUrl(1, $meta['author_id'] ?? null, $meta['search'] ?? null, $tag['slug'], $sort)) ?>">
+                        #<?= e($tag['name']) ?> (<?= (int) $tag['posts_count'] ?>)
+                    </a>
+                <?php endforeach; ?>
+            </div>
+        <?php endif; ?>
+    </aside>
     <?php
 }

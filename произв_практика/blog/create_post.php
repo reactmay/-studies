@@ -20,13 +20,15 @@ $error = '';
 $title = '';
 $content = '';
 $visibility = POST_VISIBILITY_PUBLIC;
+$tagsInput = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $title = $_POST['title'] ?? '';
     $content = $_POST['content'] ?? '';
     $visibility = normalizePostVisibility($_POST['visibility'] ?? POST_VISIBILITY_PUBLIC);
+    $tagsInput = $_POST['tags'] ?? '';
 
-    $result = createPost((int) $user['id'], $title, $content, $visibility);
+    $result = createPost((int) $user['id'], $title, $content, $visibility, $tagsInput);
 
     if ($result['ok']) {
         header('Location: dashboard.php?created=1');

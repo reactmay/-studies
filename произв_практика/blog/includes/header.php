@@ -5,6 +5,7 @@ declare(strict_types=1);
 require_once __DIR__ . '/auth.php';
 require_once __DIR__ . '/hidden_posts.php';
 require_once __DIR__ . '/content.php';
+require_once __DIR__ . '/tags.php';
 require_once __DIR__ . '/functions.php';
 require_once __DIR__ . '/subscriptions.php';
 require_once __DIR__ . '/subscription_feed.php';

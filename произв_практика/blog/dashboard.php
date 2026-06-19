@@ -15,7 +15,7 @@ $pageScripts = [
 require_once __DIR__ . '/includes/header.php';
 
 $user = requireAuth();
-$posts = getUserPosts((int) $user['id']);
+$posts = attachTagsToPosts(getUserPosts((int) $user['id']));
 $created = isset($_GET['created']);
 $updated = isset($_GET['updated']);
 $avatarUploaded = isset($_GET['avatar']);
@@ -128,6 +128,7 @@ $avatarError = $_GET['avatar_error'] ?? '';
                             · изменён <?= e(formatDate($post['updated_at'])) ?>
                         <?php endif; ?>
                     </p>
+                    <?php renderPostTags($post['tags'] ?? []); ?>
                     <div class="card-content"><?= e(postContentPreview($post['content'], 180)) ?></div>
                 </article>
             <?php endforeach; ?>

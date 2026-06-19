@@ -27,6 +27,7 @@ function renderPostCard(array $post, bool $showPreview = true): void
                 <?php endif; ?>
             </span>
         </p>
+        <?php renderPostTags($post['tags'] ?? []); ?>
         <?php if ($showPreview): ?>
             <div class="card-content"><?= e($content) ?></div>
         <?php else: ?>

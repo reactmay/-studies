@@ -8,6 +8,8 @@ declare(strict_types=1);
 /** @var string $content */
 /** @var string $visibility */
 /** @var string $error */
+/** @var string $tagsInput */
+$tagsInput = $tagsInput ?? '';
 ?>
 <?php if ($error !== ''): ?>
     <div class="alert alert-error"><?= e($error) ?></div>
@@ -24,6 +26,12 @@ declare(strict_types=1);
         <div id="post-editor"></div>
         <textarea id="content" name="content" hidden><?= e($content) ?></textarea>
         <p class="form-hint post-editor-hint">Используйте панель инструментов для форматирования. Кнопка «Изображение» позволяет добавить несколько картинок.</p>
+    </div>
+
+    <div class="form-group">
+        <label for="tags">Теги</label>
+        <input type="text" id="tags" name="tags" value="<?= e($tagsInput) ?>" placeholder="php, блог, новости">
+        <p class="form-hint">До 10 тегов через запятую. Порядок слева направо — порядок отображения на посте.</p>
     </div>
 
     <div class="form-group">

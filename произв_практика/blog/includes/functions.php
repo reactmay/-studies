@@ -92,38 +92,12 @@ function getUserPostById(int $postId, int $userId): ?array
     return $post ?: null;
 }
 
-function createPost(int $userId, string $title, string $content, string $visibility = POST_VISIBILITY_PUBLIC): array
-{
-    $title = trim($title);
-    $visibility = normalizePostVisibility($visibility);
-
-    if ($title === '' || mb_strlen($title) < 3) {
-        return ['ok' => false, 'error' => 'Заголовок должен быть не короче 3 символов.'];
-    }
-
-    $contentResult = validatePostContent($content);
-    if (!$contentResult['ok']) {
-        return $contentResult;
-    }
-    $content = $contentResult['content'];
-
-    $accessToken = $visibility === POST_VISIBILITY_ON_REQUEST ? generatePostAccessToken() : null;
-
-    $stmt = getDb()->prepare('
-        INSERT INTO posts (user_id, title, content, visibility, access_token)
-        VALUES (?, ?, ?, ?, ?)
-    ');
-    $stmt->execute([$userId, $title, $content, $visibility, $accessToken]);
-
-    return ['ok' => true, 'post_id' => (int) getDb()->lastInsertId()];
-}
-
-function updatePost(
-    int $postId,
+function createPost(
     int $userId,
     string $title,
     string $content,
-    string $visibility = POST_VISIBILITY_PUBLIC
+    string $visibility = POST_VISIBILITY_PUBLIC,
+    string $tagsInput = ''
 ): array {
     $title = trim($title);
     $visibility = normalizePostVisibility($visibility);
@@ -137,6 +111,51 @@ function updatePost(
         return $contentResult;
     }
     $content = $contentResult['content'];
+
+    $tagsResult = validateTagsInput($tagsInput);
+    if (!$tagsResult['ok']) {
+        return $tagsResult;
+    }
+
+    $accessToken = $visibility === POST_VISIBILITY_ON_REQUEST ? generatePostAccessToken() : null;
+
+    $stmt = getDb()->prepare('
+        INSERT INTO posts (user_id, title, content, visibility, access_token)
+        VALUES (?, ?, ?, ?, ?)
+    ');
+    $stmt->execute([$userId, $title, $content, $visibility, $accessToken]);
+
+    $postId = (int) getDb()->lastInsertId();
+    syncPostTags($postId, $tagsResult['tags']);
+
+    return ['ok' => true, 'post_id' => $postId];
+}
+
+function updatePost(
+    int $postId,
+    int $userId,
+    string $title,
+    string $content,
+    string $visibility = POST_VISIBILITY_PUBLIC,
+    string $tagsInput = ''
+): array {
+    $title = trim($title);
+    $visibility = normalizePostVisibility($visibility);
+
+    if ($title === '' || mb_strlen($title) < 3) {
+        return ['ok' => false, 'error' => 'Заголовок должен быть не короче 3 символов.'];
+    }
+
+    $contentResult = validatePostContent($content);
+    if (!$contentResult['ok']) {
+        return $contentResult;
+    }
+    $content = $contentResult['content'];
+
+    $tagsResult = validateTagsInput($tagsInput);
+    if (!$tagsResult['ok']) {
+        return $tagsResult;
+    }
 
     $post = getUserPostById($postId, $userId);
 
@@ -169,6 +188,8 @@ function updatePost(
             unlink($absolutePath);
         }
     }
+
+    syncPostTags($postId, $tagsResult['tags']);
 
     return ['ok' => true, 'post_id' => $postId];
 }
