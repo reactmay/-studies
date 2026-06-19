@@ -49,7 +49,7 @@ function sanitizePostHtml(string $html): string
             return '';
         }
 
-        return '<img src="' . htmlspecialchars($src, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '" alt="">';
+        return '<img class="post-gallery-image" src="' . htmlspecialchars($src, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '" alt="" loading="lazy">';
     }, $html) ?? $html;
 
     $html = preg_replace_callback('/<a\b([^>]*)>/iu', static function (array $matches): string {

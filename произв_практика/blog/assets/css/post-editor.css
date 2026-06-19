@@ -61,6 +61,16 @@
     border: 1px solid var(--border);
 }
 
+/* Переопределяется в post-gallery.css для просмотра постов */
+.post-content-html .post-gallery-image {
+    display: inline-block;
+    width: 120px;
+    height: 120px;
+    object-fit: cover;
+    margin: 0.35rem 0.35rem 0.35rem 0;
+    cursor: zoom-in;
+}
+
 .post-content-html a {
     color: var(--primary);
 }

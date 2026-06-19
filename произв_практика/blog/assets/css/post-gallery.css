@@ -1,0 +1,139 @@
+/* Миниатюры изображений в постах */
+.post-content-html .post-gallery-image {
+    display: inline-block;
+    width: 120px;
+    height: 120px;
+    object-fit: cover;
+    margin: 0.35rem 0.35rem 0.35rem 0;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    cursor: zoom-in;
+    vertical-align: top;
+    transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.post-content-html .post-gallery-image:hover {
+    transform: scale(1.03);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+}
+
+.post-content-html p:has(.post-gallery-image) {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    margin-bottom: 1rem;
+}
+
+/* Lightbox */
+.image-lightbox {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.92);
+    padding: 1rem;
+}
+
+.image-lightbox.is-open {
+    display: flex;
+}
+
+.image-lightbox__backdrop {
+    position: absolute;
+    inset: 0;
+}
+
+.image-lightbox__content {
+    position: relative;
+    z-index: 1;
+    max-width: min(92vw, 1100px);
+    max-height: 88vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.image-lightbox__img {
+    max-width: 100%;
+    max-height: calc(88vh - 3rem);
+    object-fit: contain;
+    border-radius: 8px;
+    user-select: none;
+}
+
+.image-lightbox__counter {
+    color: #cbd5e1;
+    font-size: 0.95rem;
+}
+
+.image-lightbox__close,
+.image-lightbox__nav {
+    position: absolute;
+    z-index: 2;
+    border: none;
+    background: rgba(26, 35, 50, 0.85);
+    color: #fff;
+    cursor: pointer;
+    border-radius: 8px;
+    transition: background 0.15s;
+}
+
+.image-lightbox__close:hover,
+.image-lightbox__nav:hover {
+    background: rgba(59, 130, 246, 0.85);
+}
+
+.image-lightbox__close {
+    top: 1rem;
+    right: 1rem;
+    width: 2.5rem;
+    height: 2.5rem;
+    font-size: 1.5rem;
+    line-height: 1;
+}
+
+.image-lightbox__nav {
+    top: 50%;
+    transform: translateY(-50%);
+    width: 2.75rem;
+    height: 2.75rem;
+    font-size: 1.75rem;
+    line-height: 1;
+}
+
+.image-lightbox__nav--prev {
+    left: 1rem;
+}
+
+.image-lightbox__nav--next {
+    right: 1rem;
+}
+
+.image-lightbox__nav:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+}
+
+@media (max-width: 640px) {
+    .post-content-html .post-gallery-image {
+        width: 96px;
+        height: 96px;
+    }
+
+    .image-lightbox__nav {
+        width: 2.25rem;
+        height: 2.25rem;
+        font-size: 1.35rem;
+    }
+
+    .image-lightbox__nav--prev {
+        left: 0.35rem;
+    }
+
+    .image-lightbox__nav--next {
+        right: 0.35rem;
+    }
+}
