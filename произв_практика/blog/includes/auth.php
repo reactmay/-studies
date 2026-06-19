@@ -139,10 +139,7 @@ function uploadUserAvatar(int $userId, array $file): array
         return ['ok' => false, 'error' => 'Допустимы только JPG, PNG, WEBP и GIF.'];
     }
 
-    $uploadDir = dirname(__DIR__) . '/uploads/avatars';
-    if (!is_dir($uploadDir)) {
-        mkdir($uploadDir, 0755, true);
-    }
+    $uploadDir = avatarUploadDir();
 
     $filename = sprintf('user_%d_%s.%s', $userId, bin2hex(random_bytes(8)), $allowed[$mime]);
     $destination = $uploadDir . '/' . $filename;
@@ -151,16 +148,31 @@ function uploadUserAvatar(int $userId, array $file): array
         return ['ok' => false, 'error' => 'Не удалось сохранить файл.'];
     }
 
+    return persistUserAvatar($userId, $destination, 'uploads/avatars/' . $filename);
+}
+
+function avatarUploadDir(): string
+{
+    $uploadDir = dirname(__DIR__) . '/uploads/avatars';
+
+    if (!is_dir($uploadDir)) {
+        mkdir($uploadDir, 0755, true);
+    }
+
+    return $uploadDir;
+}
+
+function persistUserAvatar(int $userId, string $absolutePath, string $relativePath): array
+{
     $db = getDb();
     $stmt = $db->prepare('SELECT avatar FROM users WHERE id = ?');
     $stmt->execute([$userId]);
     $current = $stmt->fetch();
 
-    $relativePath = 'uploads/avatars/' . $filename;
     $update = $db->prepare('UPDATE users SET avatar = ? WHERE id = ?');
     $update->execute([$relativePath, $userId]);
 
-    if (!empty($current['avatar'])) {
+    if (!empty($current['avatar']) && $current['avatar'] !== $relativePath) {
         $oldPath = dirname(__DIR__) . '/' . $current['avatar'];
         if (is_file($oldPath)) {
             unlink($oldPath);

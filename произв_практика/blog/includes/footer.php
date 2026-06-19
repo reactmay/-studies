@@ -5,5 +5,8 @@
         </div>
     </footer>
     <script src="assets/js/main.js"></script>
+    <?php foreach ($pageScripts ?? [] as $script): ?>
+        <script src="<?= e($script) ?>"></script>
+    <?php endforeach; ?>
 </body>
 </html>

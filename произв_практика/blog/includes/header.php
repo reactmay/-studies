@@ -16,6 +16,9 @@ $pageTitle = $pageTitle ?? 'Простой блог';
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= e($pageTitle) ?> — Простой блог</title>
     <link rel="stylesheet" href="assets/css/style.css">
+    <?php foreach ($pageStyles ?? [] as $style): ?>
+        <link rel="stylesheet" href="<?= e($style) ?>">
+    <?php endforeach; ?>
 </head>
 <body>
     <header class="site-header">
