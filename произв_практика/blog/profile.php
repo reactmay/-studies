@@ -121,7 +121,7 @@ require_once __DIR__ . '/includes/header.php';
                         <?php renderPostVisibilityBadge($post); ?>
                     </h3>
                     <p class="card-meta"><?= e(formatDate($post['created_at'])) ?></p>
-                    <div class="card-content"><?= e(mb_strimwidth($post['content'], 0, 220, '…')) ?></div>
+                    <div class="card-content"><?= e(postContentPreview($post['content'], 220)) ?></div>
                 </article>
             <?php endforeach; ?>
         <?php endif; ?>

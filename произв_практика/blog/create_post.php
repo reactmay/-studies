@@ -3,6 +3,15 @@
 declare(strict_types=1);
 
 $pageTitle = 'Новый пост';
+$pageStyles = [
+    'https://cdn.jsdelivr.net/npm/quill@1.3.7/dist/quill.snow.css',
+    'assets/css/post-editor.css',
+];
+$pageScripts = [
+    'https://cdn.jsdelivr.net/npm/quill@1.3.7/dist/quill.min.js',
+    'assets/js/post-editor.js',
+];
+
 require_once __DIR__ . '/includes/header.php';
 
 $user = requireAuth();
@@ -26,47 +35,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $error = $result['error'];
 }
+
+$submitLabel = 'Опубликовать';
+$cancelHref = 'dashboard.php';
 ?>
 
 <div class="card">
     <h1 class="page-title">Создание поста</h1>
-    <p class="page-subtitle">Поделитесь своими мыслями с другими пользователями</p>
+    <p class="page-subtitle">Визуальный редактор с поддержкой нескольких изображений</p>
 
-    <?php if ($error !== ''): ?>
-        <div class="alert alert-error"><?= e($error) ?></div>
-    <?php endif; ?>
-
-    <form method="post" data-validate novalidate>
-        <div class="form-group">
-            <label for="title">Заголовок</label>
-            <input type="text" id="title" name="title" value="<?= e($title) ?>" required data-validate-field="title">
-            <div class="field-error"></div>
-        </div>
-
-        <div class="form-group">
-            <label for="content">Текст поста</label>
-            <textarea id="content" name="content" required data-validate-field="content"><?= e($content) ?></textarea>
-            <div class="field-error"></div>
-        </div>
-
-        <div class="form-group">
-            <label for="visibility">Видимость</label>
-            <select id="visibility" name="visibility">
-                <option value="<?= e(POST_VISIBILITY_PUBLIC) ?>" <?= $visibility === POST_VISIBILITY_PUBLIC ? 'selected' : '' ?>>
-                    Публичный — виден всем
-                </option>
-                <option value="<?= e(POST_VISIBILITY_ON_REQUEST) ?>" <?= $visibility === POST_VISIBILITY_ON_REQUEST ? 'selected' : '' ?>>
-                    Только по запросу — скрыт, доступ по ссылке с кодом
-                </option>
-            </select>
-            <p class="form-hint">Скрытые посты не отображаются в общем списке. Ссылку с кодом вы получите после публикации.</p>
-        </div>
-
-        <div class="form-actions">
-            <button type="submit" class="btn btn-primary">Опубликовать</button>
-            <a href="dashboard.php" class="btn btn-outline">Отмена</a>
-        </div>
-    </form>
+    <?php require __DIR__ . '/includes/partials/post-form.php'; ?>
 </div>
 
 <?php require_once __DIR__ . '/includes/footer.php'; ?>

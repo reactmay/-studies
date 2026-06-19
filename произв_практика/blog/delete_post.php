@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/includes/auth.php';
 require_once __DIR__ . '/includes/hidden_posts.php';
+require_once __DIR__ . '/includes/content.php';
 require_once __DIR__ . '/includes/functions.php';
 
 $user = requireAuth();

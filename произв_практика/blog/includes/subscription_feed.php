@@ -130,7 +130,7 @@ function generateSubscriptionFeedList(
         foreach ($items as &$item) {
             $item['id'] = (int) $item['id'];
             $item['user_id'] = (int) $item['user_id'];
-            $item['preview'] = mb_strimwidth($item['content'], 0, 220, '…');
+            $item['preview'] = postContentPreview($item['content']);
         }
         unset($item);
     }

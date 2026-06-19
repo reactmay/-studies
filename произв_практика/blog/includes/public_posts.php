@@ -35,7 +35,7 @@ function enrichPublicPostItem(array $post, bool $withPreview = true): array
     $post['user_id'] = (int) $post['user_id'];
 
     if ($withPreview) {
-        $post['preview'] = mb_strimwidth($post['content'], 0, 220, '…');
+        $post['preview'] = postContentPreview($post['content']);
     }
 
     return $post;
@@ -188,7 +188,7 @@ function renderPublicPostView(array $post, ?array $currentUser, bool $showUpdate
                 <?php endif; ?>
             </span>
         </p>
-        <div class="card-content"><?= e($post['content']) ?></div>
+        <div class="card-content post-content-html"><?php renderPostContentHtml($post['content']); ?></div>
 
         <?php if ($currentUser && (int) $currentUser['id'] === (int) $post['user_id'] && isPostOnRequest($post)): ?>
             <?php renderOwnerAccessLink($post); ?>

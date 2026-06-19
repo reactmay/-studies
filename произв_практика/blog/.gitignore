@@ -3,3 +3,5 @@
 /config/database.local.php
 /uploads/avatars/*
 !/uploads/avatars/.gitkeep
+/uploads/posts/*
+!/uploads/posts/.gitkeep

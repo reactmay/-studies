@@ -128,7 +128,7 @@ $avatarError = $_GET['avatar_error'] ?? '';
                             · изменён <?= e(formatDate($post['updated_at'])) ?>
                         <?php endif; ?>
                     </p>
-                    <div class="card-content"><?= e(mb_strimwidth($post['content'], 0, 180, '…')) ?></div>
+                    <div class="card-content"><?= e(postContentPreview($post['content'], 180)) ?></div>
                 </article>
             <?php endforeach; ?>
         <?php endif; ?>

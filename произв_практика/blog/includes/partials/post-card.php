@@ -7,7 +7,7 @@ function renderPostCard(array $post, bool $showPreview = true): void
 {
     $previewLength = 220;
     $content = $showPreview
-        ? ($post['preview'] ?? mb_strimwidth($post['content'], 0, $previewLength, '…'))
+        ? ($post['preview'] ?? postContentPreview($post['content'], $previewLength))
         : $post['content'];
     ?>
     <article class="card">
@@ -27,7 +27,11 @@ function renderPostCard(array $post, bool $showPreview = true): void
                 <?php endif; ?>
             </span>
         </p>
-        <div class="card-content"><?= e($content) ?></div>
+        <?php if ($showPreview): ?>
+            <div class="card-content"><?= e($content) ?></div>
+        <?php else: ?>
+            <div class="card-content post-content-html"><?php renderPostContentHtml($content); ?></div>
+        <?php endif; ?>
     </article>
     <?php
 }

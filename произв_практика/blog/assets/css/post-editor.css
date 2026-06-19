@@ -1,0 +1,76 @@
+.post-editor-wrap {
+    margin-bottom: 1rem;
+}
+
+.post-editor-wrap .ql-toolbar.ql-snow {
+    border: 1px solid var(--border);
+    border-bottom: none;
+    border-radius: 8px 8px 0 0;
+    background: #111827;
+}
+
+.post-editor-wrap .ql-container.ql-snow {
+    border: 1px solid var(--border);
+    border-radius: 0 0 8px 8px;
+    background: #111827;
+    color: var(--text);
+    min-height: 280px;
+    font-size: 1rem;
+}
+
+.post-editor-wrap .ql-editor {
+    min-height: 280px;
+}
+
+.post-editor-wrap .ql-snow .ql-stroke {
+    stroke: #cbd5e1;
+}
+
+.post-editor-wrap .ql-snow .ql-fill {
+    fill: #cbd5e1;
+}
+
+.post-editor-wrap .ql-snow .ql-picker {
+    color: #cbd5e1;
+}
+
+.post-editor-wrap .ql-snow .ql-picker-options {
+    background: var(--surface);
+    border-color: var(--border);
+}
+
+.post-content-html {
+    white-space: normal;
+}
+
+.post-content-html p,
+.post-content-html ul,
+.post-content-html ol,
+.post-content-html blockquote,
+.post-content-html h2,
+.post-content-html h3 {
+    margin: 0 0 1rem;
+}
+
+.post-content-html img {
+    display: block;
+    max-width: 100%;
+    height: auto;
+    margin: 1rem 0;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+}
+
+.post-content-html a {
+    color: var(--primary);
+}
+
+.post-content-html blockquote {
+    padding-left: 1rem;
+    border-left: 3px solid var(--border);
+    color: var(--muted);
+}
+
+.post-editor-hint {
+    margin-top: 0.35rem;
+}

@@ -95,16 +95,17 @@ function getUserPostById(int $postId, int $userId): ?array
 function createPost(int $userId, string $title, string $content, string $visibility = POST_VISIBILITY_PUBLIC): array
 {
     $title = trim($title);
-    $content = trim($content);
     $visibility = normalizePostVisibility($visibility);
 
     if ($title === '' || mb_strlen($title) < 3) {
         return ['ok' => false, 'error' => 'Заголовок должен быть не короче 3 символов.'];
     }
 
-    if ($content === '' || mb_strlen($content) < 10) {
-        return ['ok' => false, 'error' => 'Текст поста должен быть не короче 10 символов.'];
+    $contentResult = validatePostContent($content);
+    if (!$contentResult['ok']) {
+        return $contentResult;
     }
+    $content = $contentResult['content'];
 
     $accessToken = $visibility === POST_VISIBILITY_ON_REQUEST ? generatePostAccessToken() : null;
 
@@ -125,16 +126,17 @@ function updatePost(
     string $visibility = POST_VISIBILITY_PUBLIC
 ): array {
     $title = trim($title);
-    $content = trim($content);
     $visibility = normalizePostVisibility($visibility);
 
     if ($title === '' || mb_strlen($title) < 3) {
         return ['ok' => false, 'error' => 'Заголовок должен быть не короче 3 символов.'];
     }
 
-    if ($content === '' || mb_strlen($content) < 10) {
-        return ['ok' => false, 'error' => 'Текст поста должен быть не короче 10 символов.'];
+    $contentResult = validatePostContent($content);
+    if (!$contentResult['ok']) {
+        return $contentResult;
     }
+    $content = $contentResult['content'];
 
     $post = getUserPostById($postId, $userId);
 
@@ -150,6 +152,10 @@ function updatePost(
         $accessToken = null;
     }
 
+    $oldContent = (string) ($post['content'] ?? '');
+    $oldImages = extractPostImagePaths($oldContent);
+    $newImages = extractPostImagePaths($content);
+
     $stmt = getDb()->prepare('
         UPDATE posts
         SET title = ?, content = ?, visibility = ?, access_token = ?, updated_at = NOW()
@@ -157,11 +163,26 @@ function updatePost(
     ');
     $stmt->execute([$title, $content, $visibility, $accessToken, $postId, $userId]);
 
+    foreach (array_diff($oldImages, $newImages) as $removedImage) {
+        $absolutePath = dirname(__DIR__) . '/' . $removedImage;
+        if (is_file($absolutePath)) {
+            unlink($absolutePath);
+        }
+    }
+
     return ['ok' => true, 'post_id' => $postId];
 }
 
 function deletePost(int $postId, int $userId): bool
 {
+    $post = getUserPostById($postId, $userId);
+
+    if ($post === null) {
+        return false;
+    }
+
+    deletePostImagesFromContent((string) ($post['content'] ?? ''));
+
     $stmt = getDb()->prepare('DELETE FROM posts WHERE id = ? AND user_id = ?');
     $stmt->execute([$postId, $userId]);
 
