@@ -1,18 +1,19 @@
 .post-editor-wrap {
     margin-bottom: 1rem;
+    position: relative;
 }
 
 .post-editor-wrap .ql-toolbar.ql-snow {
     border: 1px solid var(--border);
     border-bottom: none;
     border-radius: 8px 8px 0 0;
-    background: #111827;
+    background: var(--input-bg);
 }
 
 .post-editor-wrap .ql-container.ql-snow {
     border: 1px solid var(--border);
     border-radius: 0 0 8px 8px;
-    background: #111827;
+    background: var(--input-bg);
     color: var(--text);
     min-height: 280px;
     font-size: 1rem;
@@ -23,15 +24,15 @@
 }
 
 .post-editor-wrap .ql-snow .ql-stroke {
-    stroke: #cbd5e1;
+    stroke: var(--text-secondary);
 }
 
 .post-editor-wrap .ql-snow .ql-fill {
-    fill: #cbd5e1;
+    fill: var(--text-secondary);
 }
 
 .post-editor-wrap .ql-snow .ql-picker {
-    color: #cbd5e1;
+    color: var(--text-secondary);
 }
 
 .post-editor-wrap .ql-snow .ql-picker-options {
@@ -83,4 +84,201 @@
 
 .post-editor-hint {
     margin-top: 0.35rem;
+}
+
+.editor-mode-tabs {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+}
+
+.editor-mode-tab {
+    padding: 0.45rem 0.85rem;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--input-bg);
+    color: var(--muted);
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.editor-mode-tab.is-active {
+    color: var(--text);
+    border-color: var(--primary);
+    background: var(--primary-soft);
+}
+
+.editor-panel[hidden] {
+    display: none !important;
+}
+
+.bbcode-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    margin-bottom: 0.5rem;
+}
+
+.bbcode-btn {
+    min-width: 2rem;
+    padding: 0.35rem 0.55rem;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: var(--input-bg);
+    color: var(--text);
+    font: inherit;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.bbcode-btn:hover {
+    background: var(--surface-hover);
+}
+
+.bbcode-textarea {
+    width: 100%;
+    min-height: 280px;
+    padding: 0.75rem 0.9rem;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--input-bg);
+    color: var(--text);
+    font: inherit;
+    font-family: Consolas, "Courier New", monospace;
+    line-height: 1.5;
+    resize: vertical;
+}
+
+.post-content-html .post-code-block,
+.ql-syntax {
+    margin: 1rem 0;
+    padding: 1rem;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--input-bg);
+    overflow-x: auto;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+.post-content-html .post-code-block code,
+.ql-syntax {
+    font-family: Consolas, "Courier New", monospace;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    background: transparent;
+}
+
+.post-editor-wrap .ql-font-sans,
+.post-content-html .post-font-sans { font-family: "Segoe UI", system-ui, sans-serif; }
+.post-editor-wrap .ql-font-serif,
+.post-content-html .post-font-serif { font-family: Georgia, "Times New Roman", serif; }
+.post-editor-wrap .ql-font-mono,
+.post-content-html .post-font-mono { font-family: Consolas, "Courier New", monospace; }
+.post-editor-wrap .ql-font-comic,
+.post-content-html .post-font-comic { font-family: "Comic Sans MS", "Comic Sans", cursive; }
+.post-editor-wrap .ql-font-garamond,
+.post-content-html .post-font-garamond { font-family: Garamond, "Times New Roman", serif; }
+.post-editor-wrap .ql-font-georgia,
+.post-content-html .post-font-georgia { font-family: Georgia, serif; }
+
+.ql-snow .ql-picker.ql-font .ql-picker-label::before,
+.ql-snow .ql-picker.ql-font .ql-picker-item::before {
+    content: 'Шрифт';
+}
+
+.ql-snow .ql-picker.ql-font .ql-picker-label[data-value="sans"]::before,
+.ql-snow .ql-picker.ql-font .ql-picker-item[data-value="sans"]::before {
+    content: 'Обычный';
+    font-family: "Segoe UI", system-ui, sans-serif;
+}
+
+.ql-snow .ql-picker.ql-font .ql-picker-label[data-value="serif"]::before,
+.ql-snow .ql-picker.ql-font .ql-picker-item[data-value="serif"]::before {
+    content: 'С засечками';
+    font-family: Georgia, serif;
+}
+
+.ql-snow .ql-picker.ql-font .ql-picker-label[data-value="mono"]::before,
+.ql-snow .ql-picker.ql-font .ql-picker-item[data-value="mono"]::before {
+    content: 'Моноширинный';
+    font-family: Consolas, monospace;
+}
+
+.ql-snow .ql-picker.ql-font .ql-picker-label[data-value="comic"]::before,
+.ql-snow .ql-picker.ql-font .ql-picker-item[data-value="comic"]::before {
+    content: 'Comic Sans';
+    font-family: "Comic Sans MS", cursive;
+}
+
+.ql-snow .ql-picker.ql-font .ql-picker-label[data-value="garamond"]::before,
+.ql-snow .ql-picker.ql-font .ql-picker-item[data-value="garamond"]::before {
+    content: 'Garamond';
+    font-family: Garamond, serif;
+}
+
+.ql-snow .ql-picker.ql-font .ql-picker-label[data-value="georgia"]::before,
+.ql-snow .ql-picker.ql-font .ql-picker-item[data-value="georgia"]::before {
+    content: 'Georgia';
+    font-family: Georgia, serif;
+}
+
+.ql-snow .ql-toolbar button.ql-emoji::before {
+    content: '😀';
+    font-size: 1rem;
+    line-height: 1;
+}
+
+.ql-snow .ql-toolbar button.ql-emoji {
+    width: auto;
+    padding: 0 0.35rem;
+}
+
+.emoji-picker {
+    position: absolute;
+    z-index: 20;
+    width: min(320px, 100%);
+    max-height: 280px;
+    overflow: auto;
+    padding: 0.75rem;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    box-shadow: var(--shadow);
+}
+
+.emoji-picker-group + .emoji-picker-group {
+    margin-top: 0.75rem;
+}
+
+.emoji-picker-title {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--muted);
+    margin-bottom: 0.35rem;
+}
+
+.emoji-picker-grid {
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    gap: 0.2rem;
+}
+
+.emoji-picker-item {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 2rem;
+    border: none;
+    border-radius: 6px;
+    background: transparent;
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 0;
+}
+
+.emoji-picker-item:hover {
+    background: var(--surface-hover);
 }

@@ -11,6 +11,7 @@ require_once __DIR__ . '/functions.php';
 require_once __DIR__ . '/subscriptions.php';
 require_once __DIR__ . '/subscription_feed.php';
 require_once __DIR__ . '/public_posts.php';
+require_once __DIR__ . '/calendar.php';
 require_once __DIR__ . '/partials/post-card.php';
 
 $user = currentUser();
@@ -21,6 +22,15 @@ $pageTitle = $pageTitle ?? 'Простой блог';
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script>
+        (function () {
+            var theme = localStorage.getItem('theme');
+            if (theme !== 'light' && theme !== 'dark') {
+                theme = window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+            }
+            document.documentElement.setAttribute('data-theme', theme);
+        })();
+    </script>
     <title><?= e($pageTitle) ?> — Простой блог</title>
     <link rel="stylesheet" href="assets/css/style.css">
     <link rel="stylesheet" href="assets/css/post-gallery.css">
@@ -33,6 +43,10 @@ $pageTitle = $pageTitle ?? 'Простой блог';
         <div class="container header-inner">
             <a class="logo" href="index.php">Простой блог</a>
             <nav class="nav">
+                <button type="button" class="theme-toggle btn btn-outline" id="theme-toggle" aria-label="Переключить тему" title="Переключить тему">
+                    <span class="theme-toggle-icon theme-icon-light" aria-hidden="true">☀️</span>
+                    <span class="theme-toggle-icon theme-icon-dark" aria-hidden="true">🌙</span>
+                </button>
                 <a href="index.php">Главная</a>
                 <?php if ($user): ?>
                     <a href="feed.php">Лента</a>

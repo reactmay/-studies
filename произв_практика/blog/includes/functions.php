@@ -97,7 +97,8 @@ function createPost(
     string $title,
     string $content,
     string $visibility = POST_VISIBILITY_PUBLIC,
-    string $tagsInput = ''
+    string $tagsInput = '',
+    string $editorMode = 'visual'
 ): array {
     $title = trim($title);
     $visibility = normalizePostVisibility($visibility);
@@ -106,7 +107,7 @@ function createPost(
         return ['ok' => false, 'error' => 'Заголовок должен быть не короче 3 символов.'];
     }
 
-    $contentResult = validatePostContent($content);
+    $contentResult = validatePostContent($content, $editorMode);
     if (!$contentResult['ok']) {
         return $contentResult;
     }
@@ -137,7 +138,8 @@ function updatePost(
     string $title,
     string $content,
     string $visibility = POST_VISIBILITY_PUBLIC,
-    string $tagsInput = ''
+    string $tagsInput = '',
+    string $editorMode = 'visual'
 ): array {
     $title = trim($title);
     $visibility = normalizePostVisibility($visibility);
@@ -146,7 +148,7 @@ function updatePost(
         return ['ok' => false, 'error' => 'Заголовок должен быть не короче 3 символов.'];
     }
 
-    $contentResult = validatePostContent($content);
+    $contentResult = validatePostContent($content, $editorMode);
     if (!$contentResult['ok']) {
         return $contentResult;
     }

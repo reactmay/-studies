@@ -28,7 +28,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $visibility = normalizePostVisibility($_POST['visibility'] ?? POST_VISIBILITY_PUBLIC);
     $tagsInput = $_POST['tags'] ?? '';
 
-    $result = createPost((int) $user['id'], $title, $content, $visibility, $tagsInput);
+    $result = createPost((int) $user['id'], $title, $content, $visibility, $tagsInput, $_POST['editor_mode'] ?? 'visual');
 
     if ($result['ok']) {
         header('Location: dashboard.php?created=1');
@@ -44,7 +44,7 @@ $cancelHref = 'dashboard.php';
 
 <div class="card">
     <h1 class="page-title">Создание поста</h1>
-    <p class="page-subtitle">Визуальный редактор с поддержкой нескольких изображений</p>
+    <p class="page-subtitle">Визуальный редактор, BB-коды и блоки кода</p>
 
     <?php require __DIR__ . '/includes/partials/post-form.php'; ?>
 </div>

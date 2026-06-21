@@ -50,7 +50,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $visibility = normalizePostVisibility($_POST['visibility'] ?? POST_VISIBILITY_PUBLIC);
     $tagsInput = $_POST['tags'] ?? '';
 
-    $result = updatePost($id, (int) $user['id'], $title, $content, $visibility, $tagsInput);
+    $result = updatePost($id, (int) $user['id'], $title, $content, $visibility, $tagsInput, $_POST['editor_mode'] ?? 'visual');
 
     if ($result['ok']) {
         header('Location: post.php?id=' . $id . '&updated=1');

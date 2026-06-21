@@ -53,7 +53,8 @@ function generateSubscriptionFeedList(
     int $userId,
     int $page = 1,
     int $perPage = 20,
-    ?int $filterAuthorId = null
+    ?int $filterAuthorId = null,
+    ?string $filterDate = null
 ): array {
     $page = max(1, $page);
     $perPage = max(1, min(100, $perPage));
@@ -70,6 +71,13 @@ function generateSubscriptionFeedList(
         $params[] = $filterAuthorId;
     }
 
+    $filterDate = normalizeFilterDate($filterDate);
+    $dateFilterSql = '';
+    if ($filterDate !== null) {
+        $dateFilterSql = ' AND DATE(posts.created_at) = ?';
+        $params[] = $filterDate;
+    }
+
     $visibilitySql = ' AND ' . publicPostsVisibilitySql();
 
     $countSql = '
@@ -77,7 +85,7 @@ function generateSubscriptionFeedList(
         FROM posts
         JOIN subscriptions ON subscriptions.following_id = posts.user_id
         WHERE subscriptions.follower_id = ?
-        ' . $visibilitySql . $authorFilterSql;
+        ' . $visibilitySql . $authorFilterSql . $dateFilterSql;
 
     $countStmt = getDb()->prepare($countSql);
     $countStmt->execute($params);
@@ -110,7 +118,7 @@ function generateSubscriptionFeedList(
             JOIN subscriptions ON subscriptions.following_id = posts.user_id
                 AND subscriptions.follower_id = ?
             WHERE 1=1
-            ' . $visibilitySql . $authorFilterSql . '
+            ' . $visibilitySql . $authorFilterSql . $dateFilterSql . '
             ORDER BY posts.created_at DESC
             LIMIT ? OFFSET ?
         ';
@@ -147,6 +155,7 @@ function generateSubscriptionFeedList(
             'per_page' => $perPage,
             'total_pages' => $totalPages,
             'filter_user_id' => $filterAuthorId,
+            'filter_date' => $filterDate,
             'has_subscriptions' => $followingCount > 0,
         ],
         'authors' => $authors,
@@ -154,13 +163,29 @@ function generateSubscriptionFeedList(
     ];
 }
 
-function subscriptionFeedUrl(?int $authorId = null, int $page = 1): string
-{
-    $query = ['page' => max(1, $page)];
+function subscriptionFeedUrl(
+    ?int $authorId = null,
+    int $page = 1,
+    ?string $date = null,
+    ?string $calMonth = null
+): string {
+    $query = [];
+
+    if ($page > 1) {
+        $query['page'] = $page;
+    }
 
     if ($authorId !== null) {
         $query['author'] = $authorId;
     }
 
-    return 'feed.php?' . http_build_query($query);
+    if ($date !== null && $date !== '') {
+        $query['date'] = $date;
+    }
+
+    if ($calMonth !== null && $calMonth !== '') {
+        $query['cal_month'] = $calMonth;
+    }
+
+    return $query === [] ? 'feed.php' : 'feed.php?' . http_build_query($query);
 }

@@ -12,7 +12,9 @@ function publicPostsUrl(
     ?int $authorId = null,
     ?string $search = null,
     ?string $tagSlug = null,
-    string $sort = POST_SORT_NEWEST
+    string $sort = POST_SORT_NEWEST,
+    ?string $date = null,
+    ?string $calMonth = null
 ): string {
     $query = [];
 
@@ -35,6 +37,14 @@ function publicPostsUrl(
     $sort = normalizePostSort($sort);
     if ($sort !== POST_SORT_NEWEST) {
         $query['sort'] = $sort;
+    }
+
+    if ($date !== null && $date !== '') {
+        $query['date'] = $date;
+    }
+
+    if ($calMonth !== null && $calMonth !== '') {
+        $query['cal_month'] = $calMonth;
     }
 
     if ($query === []) {
@@ -85,7 +95,8 @@ function generatePublicPostsList(
     ?int $authorId = null,
     ?string $search = null,
     ?string $tagSlug = null,
-    string $sort = POST_SORT_NEWEST
+    string $sort = POST_SORT_NEWEST,
+    ?string $filterDate = null
 ): array {
     $page = max(1, $page);
     $perPage = max(1, min(100, $perPage));
@@ -117,6 +128,12 @@ function generatePublicPostsList(
             $joins .= ' JOIN tags ON tags.id = post_tags.tag_id AND tags.slug = ?';
             $params[] = $activeTag['slug'];
         }
+    }
+
+    $filterDate = normalizeFilterDate($filterDate);
+    if ($filterDate !== null) {
+        $conditions[] = 'DATE(posts.created_at) = ?';
+        $params[] = $filterDate;
     }
 
     $whereSql = implode(' AND ', $conditions);
@@ -176,6 +193,7 @@ function generatePublicPostsList(
             'tag_slug' => $activeTag['slug'] ?? null,
             'tag_name' => $activeTag['name'] ?? null,
             'sort' => $sort,
+            'filter_date' => $filterDate,
         ],
         'items' => $items,
         'tags' => getPopularTags(),
@@ -190,6 +208,7 @@ function renderPublicPostsPagination(array $meta): void
     $search = $meta['search'] ?? null;
     $tagSlug = $meta['tag_slug'] ?? null;
     $sort = $meta['sort'] ?? POST_SORT_NEWEST;
+    $filterDate = $meta['filter_date'] ?? null;
 
     if ($totalPages <= 1) {
         return;
@@ -197,13 +216,13 @@ function renderPublicPostsPagination(array $meta): void
     ?>
     <nav class="pagination" aria-label="Навигация по страницам">
         <?php if ($page > 1): ?>
-            <a class="btn btn-outline" href="<?= e(publicPostsUrl($page - 1, $authorId ?: null, $search, $tagSlug, $sort)) ?>">← Назад</a>
+            <a class="btn btn-outline" href="<?= e(publicPostsUrl($page - 1, $authorId ?: null, $search, $tagSlug, $sort, $filterDate, $meta['cal_month'] ?? null)) ?>">← Назад</a>
         <?php endif; ?>
 
         <span class="pagination-info">Страница <?= $page ?> из <?= $totalPages ?></span>
 
         <?php if ($page < $totalPages): ?>
-            <a class="btn btn-outline" href="<?= e(publicPostsUrl($page + 1, $authorId ?: null, $search, $tagSlug, $sort)) ?>">Вперёд →</a>
+            <a class="btn btn-outline" href="<?= e(publicPostsUrl($page + 1, $authorId ?: null, $search, $tagSlug, $sort, $filterDate, $meta['cal_month'] ?? null)) ?>">Вперёд →</a>
         <?php endif; ?>
     </nav>
     <?php
@@ -275,20 +294,22 @@ function renderTagFilterPanel(array $popularTags, array $meta): void
 {
     $activeSlug = $meta['tag_slug'] ?? null;
     $sort = $meta['sort'] ?? POST_SORT_NEWEST;
+    $filterDate = $meta['filter_date'] ?? null;
+    $calMonth = $meta['cal_month'] ?? null;
     ?>
-    <aside class="card tag-panel">
+    <aside class="card tag-panel feed-sidebar">
         <h2>Теги</h2>
         <?php if ($popularTags === []): ?>
             <p class="card-meta">Тегов пока нет.</p>
         <?php else: ?>
             <div class="post-tags tag-panel-list">
                 <a class="post-tag <?= $activeSlug === null ? 'is-active' : '' ?>"
-                   href="<?= e(publicPostsUrl(1, $meta['author_id'] ?? null, $meta['search'] ?? null, null, $sort)) ?>">
+                   href="<?= e(publicPostsUrl(1, $meta['author_id'] ?? null, $meta['search'] ?? null, null, $sort, $filterDate, $calMonth)) ?>">
                     Все
                 </a>
                 <?php foreach ($popularTags as $tag): ?>
                     <a class="post-tag <?= $activeSlug === $tag['slug'] ? 'is-active' : '' ?>"
-                       href="<?= e(publicPostsUrl(1, $meta['author_id'] ?? null, $meta['search'] ?? null, $tag['slug'], $sort)) ?>">
+                       href="<?= e(publicPostsUrl(1, $meta['author_id'] ?? null, $meta['search'] ?? null, $tag['slug'], $sort, $filterDate, $calMonth)) ?>">
                         #<?= e($tag['name']) ?> (<?= (int) $tag['posts_count'] ?>)
                     </a>
                 <?php endforeach; ?>

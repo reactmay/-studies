@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+require_once __DIR__ . '/bbcode.php';
+
 function postContentPlainText(string $html): string
 {
     $text = html_entity_decode(strip_tags($html), ENT_QUOTES | ENT_HTML5, 'UTF-8');
@@ -26,6 +28,12 @@ function postContentHasImages(string $html): bool
     return (bool) preg_match('/<img\b/i', $html);
 }
 
+/** @return list<string> */
+function postEditorFonts(): array
+{
+    return ['sans', 'serif', 'mono', 'comic', 'garamond', 'georgia'];
+}
+
 function sanitizePostHtml(string $html): string
 {
     $html = trim($html);
@@ -34,9 +42,18 @@ function sanitizePostHtml(string $html): string
         return '';
     }
 
-    $allowed = '<p><br><strong><b><em><i><u><s><h2><h3><ul><ol><li><a><img><blockquote>';
+    $allowed = '<p><br><strong><b><em><i><u><s><h2><h3><ul><ol><li><a><img><blockquote><pre><code><span>';
     $html = strip_tags($html, $allowed);
+
+    $html = preg_replace_callback('/<pre\b[^>]*>(.*?)<\/pre>/is', static function (array $matches): string {
+        $code = htmlspecialchars(strip_tags($matches[1]), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+        return '<pre class="post-code-block"><code>' . $code . '</code></pre>';
+    }, $html) ?? $html;
+
+    [$html, $fontPlaceholders] = extractPostFontSpans($html);
+
     $html = preg_replace('/\s(on\w+|style|class)\s*=\s*("[^"]*"|\'[^\']*\'|[^\s>]+)/iu', '', $html) ?? $html;
+    $html = str_replace(array_keys($fontPlaceholders), array_values($fontPlaceholders), $html);
     $html = preg_replace('/href\s*=\s*("\s*javascript:[^"]*"|\'\s*javascript:[^\']*\')/iu', 'href="#"', $html) ?? $html;
 
     $html = preg_replace_callback('/<img\b([^>]*)>/iu', static function (array $matches): string {
@@ -68,13 +85,57 @@ function sanitizePostHtml(string $html): string
     return $html;
 }
 
+/**
+ * @return array{0: string, 1: array<string, string>}
+ */
+function extractPostFontSpans(string $html): array
+{
+    $placeholders = [];
+    $allowed = postEditorFonts();
+
+    $html = preg_replace_callback('/<span\b([^>]*)>(.*?)<\/span>/is', static function (array $matches) use (&$placeholders, $allowed): string {
+        if (!preg_match('/\b(?:ql-font-|post-font-)(sans|serif|mono|comic|garamond|georgia)\b/i', $matches[1], $fontMatch)) {
+            return $matches[0];
+        }
+
+        $font = strtolower($fontMatch[1]);
+        if (!in_array($font, $allowed, true)) {
+            return $matches[2];
+        }
+
+        $key = '%%POSTFONT' . count($placeholders) . '%%';
+        $placeholders[$key] = '<span class="post-font-' . $font . '">' . $matches[2] . '</span>';
+
+        return $key;
+    }, $html) ?? $html;
+
+    $html = preg_replace_callback('/<p\b([^>]*)>(.*?)<\/p>/is', static function (array $matches) use (&$placeholders, $allowed): string {
+        if (!preg_match('/\b(?:ql-font-|post-font-)(sans|serif|mono|comic|garamond|georgia)\b/i', $matches[1], $fontMatch)) {
+            return $matches[0];
+        }
+
+        $font = strtolower($fontMatch[1]);
+        if (!in_array($font, $allowed, true)) {
+            return '<p>' . $matches[2] . '</p>';
+        }
+
+        $key = '%%POSTFONT' . count($placeholders) . '%%';
+        $placeholders[$key] = '<span class="post-font-' . $font . '">' . $matches[2] . '</span>';
+
+        return '<p>' . $key . '</p>';
+    }, $html) ?? $html;
+
+    return [$html, $placeholders];
+}
+
 function isAllowedPostImagePath(string $path): bool
 {
     return (bool) preg_match('#^uploads/posts/user_\d+/[a-zA-Z0-9._-]+$#', $path);
 }
 
-function validatePostContent(string $html): array
+function validatePostContent(string $html, string $editorMode = 'visual'): array
 {
+    $html = preparePostRawContent($html, $editorMode);
     $content = sanitizePostHtml($html);
     $plain = postContentPlainText($content);
 

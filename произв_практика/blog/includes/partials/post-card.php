@@ -46,6 +46,8 @@ function renderPagination(array $meta, ?int $filterAuthorId = null): void
 {
     $totalPages = (int) ($meta['total_pages'] ?? 0);
     $page = (int) ($meta['page'] ?? 1);
+    $filterDate = $meta['filter_date'] ?? null;
+    $calMonth = $meta['cal_month'] ?? null;
 
     if ($totalPages <= 1) {
         return;
@@ -53,13 +55,13 @@ function renderPagination(array $meta, ?int $filterAuthorId = null): void
     ?>
     <nav class="pagination" aria-label="Навигация по страницам">
         <?php if ($page > 1): ?>
-            <a class="btn btn-outline" href="<?= e(subscriptionFeedUrl($filterAuthorId, $page - 1)) ?>">← Назад</a>
+            <a class="btn btn-outline" href="<?= e(subscriptionFeedUrl($filterAuthorId, $page - 1, $filterDate, $calMonth)) ?>">← Назад</a>
         <?php endif; ?>
 
         <span class="pagination-info">Страница <?= $page ?> из <?= $totalPages ?></span>
 
         <?php if ($page < $totalPages): ?>
-            <a class="btn btn-outline" href="<?= e(subscriptionFeedUrl($filterAuthorId, $page + 1)) ?>">Вперёд →</a>
+            <a class="btn btn-outline" href="<?= e(subscriptionFeedUrl($filterAuthorId, $page + 1, $filterDate, $calMonth)) ?>">Вперёд →</a>
         <?php endif; ?>
     </nav>
     <?php

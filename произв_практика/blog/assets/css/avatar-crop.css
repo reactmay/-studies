@@ -3,7 +3,7 @@
     padding: 1rem;
     border: 1px solid var(--border);
     border-radius: var(--radius);
-    background: #111827;
+    background: var(--input-bg);
 }
 
 .avatar-crop-panel.is-hidden {

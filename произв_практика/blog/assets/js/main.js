@@ -1,4 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
+    initThemeToggle();
+
     document.querySelectorAll('form[data-validate]').forEach((form) => {
         form.addEventListener('submit', (event) => {
             clearErrors(form);
@@ -64,4 +66,18 @@ function showFieldError(input, message) {
         errorEl.textContent = message;
         errorEl.classList.add('visible');
     }
+}
+
+function initThemeToggle() {
+    const toggle = document.getElementById('theme-toggle');
+    if (!toggle) {
+        return;
+    }
+
+    toggle.addEventListener('click', () => {
+        const current = document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
+        const next = current === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', next);
+        localStorage.setItem('theme', next);
+    });
 }
